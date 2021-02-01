@@ -5,9 +5,96 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.fullScreen {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}
+
+hr{
+  height: 6px;
+}
+
+.loginForm{
+  margin-top: 30%;
+}
+
+/* nav{
+  height: 60px;
+} */
+
+li{
+  text-transform: lowercase;
+}
+
+
+.Sidebar{
+  height: 100%;
+}
+
+.sidebar-sticky {
+  position: relative;
+  top: 0;
+  height: calc(100vh - 77px);
+  padding-top: .5rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+
+.pill a:hover{
+  background-color: #EFEFEF;
+}
+
+.tab{
+      border-collapse: separate;
+    border-spacing:0 20px;
+}
+
+.bg{
+  background-color: grey;
+}
+
+.searchbar{
+  margin-left: 17%;
+  margin-right: 17%;
+}
+
+.ulOverflow {
+  max-height: 300px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cardhover:hover{
+  transform: scale(1.05);
+box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+}
+
+.sticky {
+  position: fixed;
+  top: 0;
+  width : 100%;
+  z-index: 1000;
+}
+
+.overflow {
+  display: inline-block;
+  width: 230px;
+  white-space: nowrap;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+}
+
+.resp {
+  width: 100%;
+  height: auto;
+} 
