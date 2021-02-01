@@ -1,0 +1,36 @@
+.navigation-clean-button {
+  background: #fff;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  color: #333;
+  border-radius: 0;
+  box-shadow: 0 6px 6px -6px #999;
+  border: none;
+  margin-bottom: 0;
+}
+
+.navigation-clean-button .navbarBrand {
+  font-weight: bold;
+  color: inherit;
+}
+
+.navigation-clean-button .actions .login {
+  margin-right: 1rem;
+  text-decoration: none;
+  color: #465765;
+}
+
+.navigation-clean-button .txt .action-button,
+.navigation-clean-button .txt .action-button:active,
+.navigation-clean-button .txt .action-button:hover {
+  background: #009387;
+  border-radius: 20px;
+  font-size: inherit;
+  color: #fff;
+  box-shadow: none;
+  border: none;
+  text-shadow: none;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.25s;
+  font-size: inherit;
+}

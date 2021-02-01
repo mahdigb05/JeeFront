@@ -1,5 +1,6 @@
 import LoginForm from './loginPage/loginForm'
 import SignUp from './signupPage/signUp'
+import NavBar from './navBar/NavBar'
 import './App.css';
 import React from 'react';
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
@@ -14,6 +15,7 @@ function App() {
 								<Switch>
 									<Route exact path='/' component={LoginForm} />
                   <Route exact path='/inscription' component={SignUp} />
+                  <Route exact path='/navBar' component={NavBar} />
 								</Switch>
 		</BrowserRouter>
     </div>
