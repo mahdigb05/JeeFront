@@ -142,7 +142,7 @@ const ListCours = () => {
           </thead>
           <tbody>
             {search(cours).map((cour) => (
-              <TableRow etudiants={cour} />
+              <TableRow cours={cour} />
             ))}
           </tbody>
         </table>

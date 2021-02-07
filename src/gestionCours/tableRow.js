@@ -13,7 +13,7 @@ const layout = {
   wrapperCol: { span: 16 },
 };
 
-const TableRow = ({ cour }) => {
+const TableRow = ({ cours }) => {
   const [visible, setVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalText, setModalText] = useState("");
@@ -75,7 +75,7 @@ const TableRow = ({ cour }) => {
       var payload = new FormData();
       payload.set("titre", titre);
       payload.set("idModule", idModule);
-      payload.set("id_cours", cour.id_cours);
+      payload.set("id_cours", cours.id_cours);
       payload.set(file, file);
 
       try {
@@ -87,7 +87,7 @@ const TableRow = ({ cour }) => {
       };
 
       try {
-        axios.delete("" + cour.id_cours, { headers: headers });
+        axios.delete("" + cours.id_cours, { headers: headers });
       } catch (error) {}
     }
   };
@@ -116,8 +116,8 @@ const TableRow = ({ cour }) => {
 
             {state === "consultation" ? (
               <Select>
-                <Option defaultValue={cour.module.nom_module}>
-                  cour.module.nom_module
+                <Option defaultValue={cours.module.nom_module}>
+                  {cours.module.nom_module}
                 </Option>
               </Select>
             ) : (
@@ -151,9 +151,9 @@ const TableRow = ({ cour }) => {
         )}
       </Modal>
       <tr>
-        <td>{cour.id_cours}</td>
-        <td>{cour.titre}</td>
-        <td>{cour.module.nom_module}</td>
+        <td>{cours.id_cours}</td>
+        <td>{cours.titre}</td>
+        <td>{cours.module.nom_module}</td>
         <td>
           <Dropdown overlay={menu} placement="bottomLeft" arrow>
             <Button>

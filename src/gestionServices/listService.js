@@ -1,18 +1,30 @@
-import React, { useState, useContext, useEffect, useCallback } from "react";
-// import User from './User';
-import Navbar from "../navBar/NavBar";
-// import Sidebar from '../Global-Components/sidebar';
-// import AddUser from './AddUser';
-// import ModalUser from '../Modal/ModalUser';
-// import {UserContext} from '../contexts/UserContext'
-// import UserService from '../services/UserService'
-import { Input } from "antd";
+import { Tabs } from "antd";
+import { useContext } from "react";
+import { GlobalContext } from "../contexts/globalContext";
+import TableRow from "../gestionCours/tableRow";
 
-const { Search } = Input;
+const { TabPane } = Tabs;
 
-const ListServices = () => {
+const listService = () => {
+  const { services } = useContext(GlobalContext);
+  const searchColumns = ["id_service", "description"];
+
+  const search = (rows) => {
+    const output = rows.filter((row) =>
+      searchColumns.some(
+        (column) =>
+          row.module[column]
+            .toString()
+            .toLowerCase()
+            .indexOf(searchValue.toLocaleLowerCase()) > -1
+      )
+    );
+    return output;
+  };
+
   return (
     <div>
+      {CoursForm}
       <Navbar />
       <div className="container pt-4">
         <div className="row">
@@ -25,19 +37,20 @@ const ListServices = () => {
                 Demandes de services
               </h2>
               {/* <input className="form-control form-control-sm col-lg-4 searchbar mr-1" type="text" placeholder= "Recherche" value = {q} onChange = {(e) => setQ(e.target.value)}/> */}
-              <Search style={{ width: "35%"}} />
+              <Search style={{ width: "35%" }} />
             </div>
             <table className="table  table-sm table-light tab ml-md-4 green">
               <thead className="font-weight-normal">
                 <tr className="shadow-sm text-primary">
-                  <th scope="col">Matricule</th>
-                  <th scope="col">Nom</th>
-                  <th scope="col">Prenom</th>
-                  <th scope="col">Email</th>
-                  <th scope="col">Telephone</th>
+                  <th scope="col">Id service</th>
+                  <th scope="col">description</th>
+                  <th scope="col">Actions</th>
                 </tr>
               </thead>
               <tbody>
+                {search(services).map((service) => (
+                  <TableRow service={service} />
+                ))}
               </tbody>
             </table>
           </div>
@@ -46,5 +59,3 @@ const ListServices = () => {
     </div>
   );
 };
-
-export default ListServices;
