@@ -29,7 +29,7 @@ const props = {
 const CoursForm = () => {
   return (
     <Form {...layout} name="basic">
-      <Form.Item label="Nom" name="name">
+      <Form.Item label="Nom du cours" name="name">
         <Input />
       </Form.Item>
 

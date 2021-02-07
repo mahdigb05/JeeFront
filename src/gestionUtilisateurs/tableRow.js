@@ -1,34 +1,44 @@
+import { Menu, Button, Dropdown } from "antd";
+import { EllipsisOutlined } from "@ant-design/icons";
 
+const TableRow = ({ etudiant }) => {
+  const menu = (
+    <Menu>
+      <Menu.Item>
+        <Button type="text">supprimer</Button>
+      </Menu.Item>
 
-const TableRow = ({utilisateur}) => {
-    
+      <Menu.Item>
+        <Button type="text">consulter</Button>
+      </Menu.Item>
+    </Menu>
+  );
 
-    return(
-        <>
-			<Modal
+  return (
+    <>
+      {/* <Modal
 					title={modalTitle}
 					visible={visible}
 					onOk={() => {handler()}}
 					onCancel={() => {handleCancel()}}>
 					<p>{modalText}</p>
 					<i class="fas fa-chevron-down"></i>
-			</Modal>
-			<tr>
-				<td><Button type="link" onClick = {() => {toggleExpand()}}><i class={(isExpanded) ? 'fas fa-chevron-up' : 'fas fa-chevron-down'}></i></Button></td>
-				<td>{utilisateur.id}</td>
-				<td>{utilisateur.nom}</td>
-				<td>{utilisateur.prenom}</td>
-				<td>{utilisateur.email}</td>
-				<td className='overflow'>{courrier.objet}</td>
-				<td>
-					<Dropdown overlay={menu} placement="bottomLeft">
-						<a><i class="fas fa-ellipsis-h"></i></a>
-					</Dropdown>
-				</td>
-			</tr>
+			</Modal> */}
+      <tr>
+        <td>{etudiant.id}</td>
+        <td>{etudiant.nom}</td>
+        <td>{etudiant.prenom}</td>
+        <td>{etudiant.email}</td>
+        <td>
+          <Dropdown overlay={menu} placement="bottomLeft" arrow>
+            <Button>
+              <EllipsisOutlined />
+            </Button>
+          </Dropdown>
+        </td>
+      </tr>
+    </>
+  );
+};
 
-			<ExpandedTableRow  isExpanded={isExpanded} utilisateur={utilisateur} />
-
-		</>
-    )
-}
+export default TableRow;
