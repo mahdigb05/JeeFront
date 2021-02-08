@@ -3,13 +3,20 @@ import { Link } from "react-router-dom";
 import SignedInLinks from "./SignedInLinks";
 import SignedOutLinks from "./SignedOutLinks";
 import styles from "./NavBar.module.css";
+import AdminLinks from "./AdminLinks";
+import ProfesseurLinks from "./ProfesseurLinks";
+import EtudiantLinks from "./EtudiantsLinks";
 
 const NavBar = () => {
   const auth = {
-    uid : true
-  }
+    uid: true,
+  };
 
-  const links = auth.uid ? <SignedInLinks /> : <SignedOutLinks />;
+  const role = localStorage.getItem("user_role");
+  var links;
+  if (role === "ROLE_ADMINISTRATEUR") links = <AdminLinks />;
+  else if (role === "ROLE_PROFESSEUR") links = <ProfesseurLinks />;
+  else links = <EtudiantLinks />;
   return (
     <nav
       className={`navbar navbar-light navbar-expand-md ${styles["navigation-clean-button"]}`}
@@ -38,5 +45,4 @@ const NavBar = () => {
   );
 };
 
-
-export default NavBar
+export default NavBar;

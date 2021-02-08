@@ -108,7 +108,7 @@ const TableRow = ({ cours }) => {
           <Form {...layout} name="basic">
             <Form.Item label="Nom du cours" name="name">
               <Input
-                value={cour.titre}
+                value={cours.titre}
                 disabled={state === "modification" ? false : true}
                 onChange={(value) => setTitre(value)}
               />
