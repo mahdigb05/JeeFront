@@ -1,10 +1,11 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Navbar from "../navBar/NavBar";
 import { GlobalContext } from "../contexts/globalContext";
-import { Button, Select, Modal, Form, Input, Upload } from "antd";
+import { Button, Select, Modal, Form, Input, Upload, message } from "antd";
 import TableRow from "./tableRow";
 import axios from "axios";
 import { InboxOutlined } from "@ant-design/icons";
+import uuid from "uuid/dist/v4";
 const { Dragger } = Upload;
 const { Option } = Select;
 
@@ -12,16 +13,29 @@ const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 16 },
 };
+
 const { Search } = Input;
 
 const ListCours = () => {
-  const { cours, modules } = useContext(GlobalContext);
+  const {
+    cours,
+    modules,
+    setCours,
+    getRessourceFromApi,
+    setModules,
+  } = useContext(GlobalContext);
+
   const [searchValue, setSearchValue] = useState("");
   const searchColumns = ["titre", "id_cours", "nom_module"];
   const [titre, setTitre] = useState("");
   const [idModule, setIdModule] = useState(0);
   const [file, setFile] = useState(null);
   const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    getRessourceFromApi("http://localhost:8080/cours", setCours);
+    getRessourceFromApi("http://localhost:8080/modules", setModules);
+  }, []);
 
   const props = {
     name: "file",
@@ -53,16 +67,21 @@ const ListCours = () => {
     return output;
   };
 
-  const ajouterCours = () => {
+  const ajouterCours = async () => {
     const headers = {
       Authorization: "Bearer " + localStorage.getItem("token"),
     };
     try {
       var payload = new FormData();
-      payload.set("titre", titre);
-      payload.set("idModule", idModule);
-      payload.set(file, file);
-      axios.post("", payload, { headers: headers });
+      payload.append("file", file);
+      payload.append("titre", titre);
+      payload.append("idModule", idModule);
+      await axios.post("http://localhost:8080/ajouterCours", payload, {
+        headers: headers,
+      });
+      getRessourceFromApi("http://localhost:8080/cours", setCours);
+      setVisible(false);
+      message.success("cours ajouter avec succes");
     } catch (error) {}
   };
 
@@ -75,24 +94,22 @@ const ListCours = () => {
     >
       <Form {...layout} name="basic">
         <Form.Item label="Nom du cours" name="name">
-          <Input
-            onChange={(value) => setTitre(value)}
-          />
+          <Input onChange={(value) => setTitre(value.target.value)} />
         </Form.Item>
         <Form.Item label="Module">
-        <Select
+          <Select
             onChange={(value) => {
-            setIdModule(value);
-          }}
-        >
-          {modules.map((module) => (
-            <Option value={module.id_Module}>module.nom_module</Option>
-          ))}
-        </Select>
+              setIdModule(value);
+            }}
+          >
+            {modules.map((module) => (
+              <Option value={module.id_module}>{module.nom_module}</Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <Form.Item label="fichier de cours">
-          <Dragger {...props}>
+          <Dragger {...props} beforeUpload={() => false}>
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
@@ -121,7 +138,7 @@ const ListCours = () => {
 
           <Search
             style={{ width: "35%", marginRight: "4%" }}
-            onChange={(value) => setSearchValue(value)}
+            onChange={(value) => setSearchValue(value.target.value)}
           />
           <Button
             type="primary"
@@ -142,7 +159,7 @@ const ListCours = () => {
           </thead>
           <tbody>
             {search(cours).map((cour) => (
-              <TableRow cours={cour} />
+              <TableRow cours={cour} key={uuid()} />
             ))}
           </tbody>
         </table>

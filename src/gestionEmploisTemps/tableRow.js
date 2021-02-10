@@ -4,6 +4,7 @@ import { useContext, useState } from "react";
 import { Form, Input, Upload, message } from "antd";
 import { InboxOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { GlobalContext } from "../contexts/globalContext";
 const { Dragger } = Upload;
 const { Option } = Select;
 
@@ -18,8 +19,9 @@ const TableRow = ({ edt }) => {
   const [modalText, setModalText] = useState("");
   const [state, setState] = useState("consultation");
   const [titre, setTitre] = useState("");
-  const [saison, setSaison] = useState(-1);
+  const [saison, setSaison] = useState("");
   const [file, setFile] = useState(null);
+  const { setEdts, getRessourceFromApi } = useContext(GlobalContext);
 
   const props = {
     name: "file",
@@ -27,6 +29,22 @@ const TableRow = ({ edt }) => {
     onChange(info) {
       setFile(info.file);
     },
+  };
+
+  const handleDelete = () => {
+    setState("suppression");
+    setModalText("voulez-vous vraiment supprimer cet emplois du temps");
+    setModalTitle("Confirmation de suppression");
+    setVisible(true);
+  };
+
+  const handleConsult = () => {
+    setModalTitle("Consultation de l'emploi du temps");
+    setVisible(true);
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
   };
 
   const menu = (
@@ -45,22 +63,7 @@ const TableRow = ({ edt }) => {
     </Menu>
   );
 
-  const handleDelete = () => {
-    setModalText("voulez-vous vraiment supprimer cet emplois du temps");
-    setModalTitle("Confirmation de suppression");
-    setVisible(true);
-  };
-
-  const handleConsult = () => {
-    setModalTitle("Consultation de l'emploi du temps");
-    setVisible(true);
-  };
-
-  const handleCancel = () => {
-    setVisible(false);
-  };
-
-  const handleClick = () => {
+  const handleClick = async () => {
     if (state === "consultation") {
       setState("modification");
       return;
@@ -70,12 +73,17 @@ const TableRow = ({ edt }) => {
       };
 
       var payload = new FormData();
-      payload.set("titre", titre);
-      payload.set("saison", saison);
-      payload.set(file, file);
+      payload.append("titre", titre);
+      payload.append("saison", saison);
+      payload.append(file, file);
 
       try {
-        axios.post("", payload, { headers: headers });
+        await axios.put("http://localhost:8080/modifierEdt/", payload, {
+          headers: headers,
+        });
+        getRessourceFromApi("http://localhost:8080/edts", setEdts);
+        setVisible(false);
+        message.success("emploi du temps modifier avec succes");
       } catch (error) {}
     } else {
       let headers = {
@@ -83,7 +91,12 @@ const TableRow = ({ edt }) => {
       };
 
       try {
-        axios.delete("" + edt.id_edt, { headers: headers });
+        await axios.delete("http://localhost:8080/supprimerEdt/" + edt.idEdt, {
+          headers: headers,
+        });
+        getRessourceFromApi("http://localhost:8080/edts", setEdts);
+        setVisible(false);
+        message.success("emploi du temps supprimer avec succes");
       } catch (error) {}
     }
   };
@@ -99,37 +112,43 @@ const TableRow = ({ edt }) => {
         }}
       >
         {modalTitle === "Confirmation de suppression" ? (
-          { modalText }
+          modalText
         ) : (
           <Form {...layout} name="basic">
-            <Form.Item label="Nom du cours" name="name">
+            <Form.Item label="titre de l'emplois" name="titre">
               <Input
-                value={cour.titre}
-                disabled={state === "modification" ? false : true}
-                onChange={(value) => setTitre(value)}
+                defaultValue={edt.titre}
+                readOnly={state === "modification" ? false : true}
+                onChange={(value) => setTitre(value.target.value)}
               />
             </Form.Item>
-
-            {state === "consultation" ? (
-              <Select>
-                <Option defaultValue={edt.saison}>
-                  {edt.saison}
-                </Option>
-              </Select>
-            ) : (
-              <Select
-                onChange={(value) => {
-                  setSaison(value);
-                }}
-              >
+            <Form.Item label="Saison">
+              {state === "consultation" ? (
+                <Select defaultValue={edt.saison}>
+                  <Option>{edt.saison}</Option>
+                </Select>
+              ) : (
+                <Select
+                  defaultValue={edt.saison}
+                  onChange={(value) => {
+                    setSaison(value);
+                  }}
+                >
                   <Option value="printemps">printemps</Option>
-				  <Option value="hiver">hiver</Option>
-              </Select>
-            )}
+                  <Option value="hiver">hiver</Option>
+                </Select>
+              )}
+            </Form.Item>
 
-            {state === "modification" ? (
-              <Form.Item label="charger le fichier de cours">
-                <Dragger {...props}>
+            <Form.Item
+              label={
+                state === "modification"
+                  ? "telecharger le cours"
+                  : "visualiser le cours"
+              }
+            >
+              {state === "modification" ? (
+                <Dragger {...props} beforeUpload={() => false}>
                   <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                   </p>
@@ -138,15 +157,15 @@ const TableRow = ({ edt }) => {
                     télécharger
                   </p>
                 </Dragger>
-              </Form.Item>
-            ) : (
-              <a>visualiser le document du cours</a>
-            )}
+              ) : (
+                <a>visualiser le document du cours</a>
+              )}
+            </Form.Item>
           </Form>
         )}
       </Modal>
       <tr>
-        <td>{edt.id_edt}</td>
+        <td>{edt.idEdt}</td>
         <td>{edt.titre}</td>
         <td>{edt.saison}</td>
         <td>

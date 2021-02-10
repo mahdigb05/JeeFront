@@ -2,21 +2,37 @@ import axios from "axios";
 import React, { useState } from "react";
 import styles from "./Auth.module.css";
 import { message } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+import { NavLink } from "react-router-dom";
 
 const LoginForm = ({ history }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
-    var payload = new FormData();
-    payload.set("email", email);
-    payload.set("password", password);
-
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log(email, password);
     try {
-      const { data } = await axios.post("", payload);
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user_role", data.role);
+      const response = await axios.post(
+        "http://localhost:8080/login",
+        { email, password },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user_role", response.data.role);
+	  localStorage.setItem("user_email",response.data.email);
+      if (localStorage.getItem("user_role") === "ROLE_ETUDIANT")
+        history.push("/Semestres");
+      else if (localStorage.getItem("user_role") === "ROLE_PROFESSEUR")
+        history.push("/ModulesProf");
+	else
+		history.push("/cours")
     } catch (err) {
       if (err.response.status === 400) {
         setError(err.response.data.message);
@@ -29,9 +45,9 @@ const LoginForm = ({ history }) => {
 
   return (
     <div className={styles.content}>
-      <form className={styles.formIn} onSubmit={handleSubmit}>
+      <form className={styles.formIn} onSubmit={(e) => handleSubmit(e)}>
         <div className={styles.illustration}>
-          <i className="fas fa-user-lock"></i>
+          <UserOutlined />
         </div>
         {error ? (
           <div class="alert alert-danger" role="alert">
@@ -46,7 +62,7 @@ const LoginForm = ({ history }) => {
             aria-describedby="email"
             placeholder="adresse email"
             required
-            onChange={(value) => setEmail(value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="form-group">
@@ -56,7 +72,7 @@ const LoginForm = ({ history }) => {
             id="password"
             placeholder="mot de passe"
             required
-            onChange={(value) => setPassword(value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
 
@@ -67,7 +83,7 @@ const LoginForm = ({ history }) => {
           connexion
         </button>
         <br />
-        <a>s'inscrire</a>
+        <NavLink to='/inscription'>s'inscrire</NavLink>
       </form>
     </div>
   );

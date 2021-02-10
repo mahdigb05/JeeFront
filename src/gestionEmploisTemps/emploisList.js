@@ -1,10 +1,11 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import Navbar from "../navBar/NavBar";
 import { GlobalContext } from "../contexts/globalContext";
-import { Button, Select, Modal, Form, Input, Upload } from "antd";
+import { Button, Select, Modal, Form, Input, Upload, message } from "antd";
 import TableRow from "./tableRow";
 import axios from "axios";
 import { InboxOutlined } from "@ant-design/icons";
+import uuid from "uuid/dist/v4";
 const { Dragger } = Upload;
 const { Option } = Select;
 
@@ -15,12 +16,12 @@ const layout = {
 const { Search } = Input;
 
 const ListEdts = () => {
-  const { cours, modules } = useContext(GlobalContext);
+  const { edts, setEdts, getRessourceFromApi } = useContext(GlobalContext);
   const [searchValue, setSearchValue] = useState("");
-  const searchColumns = ["titre", "id_edt", "saison"];
+  const searchColumns = ["titre", "idEdt", "saison"];
   const [titre, setTitre] = useState("");
   const [saison, setSaison] = useState("");
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState({});
   const [visible, setVisible] = useState(false);
 
   const props = {
@@ -31,38 +32,40 @@ const ListEdts = () => {
     },
   };
 
+  useEffect(() => {
+    getRessourceFromApi("http://localhost:8080/edts", setEdts);
+  }, []);
+
   const search = (rows) => {
+	  console.log(rows);
     const output = rows.filter((row) =>
       searchColumns.some((column) => {
-        if (column === "nom_module") {
-          return (
-            row.module[column]
-              .toString()
-              .toLowerCase()
-              .indexOf(searchValue.toLocaleLowerCase()) > -1
-          );
-        } else
-          return (
-            row[column]
-              .toString()
-              .toLowerCase()
-              .indexOf(searchValue.toLocaleLowerCase()) > -1
-          );
+        return (
+          row[column]
+            .toString()
+            .toLowerCase()
+            .indexOf(searchValue.toLocaleLowerCase()) > -1
+        );
       })
     );
     return output;
   };
 
-  const ajouterEdt = () => {
+  const ajouterEdt = async () => {
     const headers = {
       Authorization: "Bearer " + localStorage.getItem("token"),
     };
     try {
       var payload = new FormData();
-      payload.set("titre", titre);
-      payload.set("saison", saison);
-      payload.set(file, file);
-      axios.post("", payload, { headers: headers });
+      payload.append("titre", titre);
+      payload.append("saison", saison);
+      payload.append("file", file);
+      await axios.post("http://localhost:8080/ajouterEdt", payload, {
+        headers: headers,
+      });
+      getRessourceFromApi("http://localhost:8080/edts", setEdts);
+      setVisible(false);
+	  message.success("emploi du temps ajouté avec succes");
     } catch (error) {}
   };
 
@@ -75,7 +78,7 @@ const ListEdts = () => {
     >
       <Form {...layout} name="basic">
         <Form.Item label="titre de l'emploi" name="name">
-          <Input onChange={(value) => setTitre(value)} />
+          <Input onChange={(value) => setTitre(value.target.value)} />
         </Form.Item>
         <Form.Item label="Saison">
           <Select
@@ -83,13 +86,13 @@ const ListEdts = () => {
               setSaison(value);
             }}
           >
-            <Option value="printemps">printemps</Option>
+            <Option value="automne">automne</Option>
             <Option value="hiver">hiver</Option>
           </Select>
         </Form.Item>
 
         <Form.Item label="fichier de l'emploi">
-          <Dragger {...props}>
+          <Dragger {...props} beforeUpload={() => false}>
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
@@ -105,20 +108,20 @@ const ListEdts = () => {
 
   return (
     <div>
-      {CoursForm}
+      {EdtForm}
       <Navbar />
       <div className="container pt-4">
         <div className="form-inline" style={{ marginTop: "3%" }}>
           <h2
             className="font-weight-bold "
-            style={{ marginRight: "25%", marginLeft: "2%" }}
+            style={{ marginRight: "10%", marginLeft: "2%" }}
           >
             Liste des emplois du temps
           </h2>
 
           <Search
-            style={{ width: "35%", marginRight: "4%" }}
-            onChange={(value) => setSearchValue(value)}
+            style={{ width: "35%", marginRight: "2%" }}
+            onChange={(value) => setSearchValue(value.target.value)}
           />
           <Button
             type="primary"
@@ -134,11 +137,12 @@ const ListEdts = () => {
               <th scope="col">Id emploi du temps</th>
               <th scope="col">Titre</th>
               <th scope="col">Saison</th>
+			  <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
             {search(edts).map((edt) => (
-              <TableRow etudiants={edt} />
+              <TableRow edt={edt} key={uuid()} />
             ))}
           </tbody>
         </table>

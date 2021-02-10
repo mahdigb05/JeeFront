@@ -20,4 +20,4 @@ const PrivateRoute = ({component : Component , role, ...rest}) => {
 }
 
 
-export default PrivateRoute
+export default PrivateRoute;

@@ -17,11 +17,11 @@ const TableRow = ({ cours }) => {
   const [visible, setVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalText, setModalText] = useState("");
-  const [state, setState] = useState("consultation");
+  const [state, setState] = useState("");
   const [titre, setTitre] = useState("");
-  const [idModule, setIdModule] = useState(-1);
-  const [file, setFile] = useState(null);
-  const { modules } = useContext(GlobalContext);
+  const [idModule, setIdModule] = useState(0);
+  const [file, setFile] = useState({});
+  const { modules, setCours, getRessourceFromApi } = useContext(GlobalContext);
 
   const props = {
     name: "file",
@@ -29,6 +29,20 @@ const TableRow = ({ cours }) => {
     onChange(info) {
       setFile(info.file);
     },
+  };
+
+  const handleDelete = () => {
+    setState("suppression");
+    setModalText("voulez-vous vraiment supprimer ce cours");
+    setModalTitle("Confirmation de suppression");
+    setVisible(true);
+  };
+
+  const handleConsult = () => {
+    setState("consultation");
+    setModalText("voulez-vous vraiment supprimer ce cours");
+    setModalTitle("Consultation du cours");
+    setVisible(true);
   };
 
   const menu = (
@@ -47,39 +61,32 @@ const TableRow = ({ cours }) => {
     </Menu>
   );
 
-  const handleDelete = () => {
-    setModalText("voulez-vous vraiment supprimer ce cours");
-    setModalTitle("Confirmation de suppression");
-    setVisible(true);
-  };
-
-  const handleConsult = () => {
-    setModalText("voulez-vous vraiment supprimer ce cours");
-    setModalTitle("Consultation du cours");
-    setVisible(true);
-  };
-
   const handleCancel = () => {
     setVisible(false);
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (state === "consultation") {
       setState("modification");
+      setTitre(cours.titre);
+      setIdModule(cours.module.id_module);
       return;
     } else if (state === "modification") {
       let headers = {
         Authorization: "Bearer " + localStorage.getItem("token"),
       };
-
-      var payload = new FormData();
-      payload.set("titre", titre);
-      payload.set("idModule", idModule);
-      payload.set("id_cours", cours.id_cours);
-      payload.set(file, file);
-
       try {
-        axios.post("", payload, { headers: headers });
+        var payload = new FormData();
+        payload.append("file", file);
+        payload.append("titre", titre);
+        payload.append("idModule", idModule);
+        payload.append("id_cours", cours.id_cours);
+        await axios.put("http://localhost:8080/modifierCours", payload, {
+          headers: headers,
+        });
+        getRessourceFromApi("http://localhost:8080/cours", setCours);
+        setVisible(false);
+        message.success("cours modifier avec succes");
       } catch (error) {}
     } else {
       let headers = {
@@ -87,7 +94,13 @@ const TableRow = ({ cours }) => {
       };
 
       try {
-        axios.delete("" + cours.id_cours, { headers: headers });
+        await axios.delete(
+          "http://localhost:8080/supprimerCours/" + cours.id_cours,
+          { headers: headers }
+        );
+        getRessourceFromApi("http://localhost:8080/cours", setCours);
+        setVisible(false);
+        message.success("cours supprimer avec succes");
       } catch (error) {}
     }
   };
@@ -103,38 +116,46 @@ const TableRow = ({ cours }) => {
         }}
       >
         {modalTitle === "Confirmation de suppression" ? (
-          { modalText }
+          modalText
         ) : (
           <Form {...layout} name="basic">
             <Form.Item label="Nom du cours" name="name">
               <Input
-                value={cours.titre}
-                disabled={state === "modification" ? false : true}
-                onChange={(value) => setTitre(value)}
+                readOnly={state === "modification" ? false : true}
+                defaultValue={cours.titre}
+                onChange={(value) => setTitre(value.target.value)}
               />
             </Form.Item>
 
-            {state === "consultation" ? (
-              <Select>
-                <Option defaultValue={cours.module.nom_module}>
-                  {cours.module.nom_module}
-                </Option>
-              </Select>
-            ) : (
-              <Select
-                onChange={(value) => {
-                  setIdModule(value);
-                }}
-              >
-                {modules.map((module) => (
-                  <Option value={module.id_Module}>module.nom_module</Option>
-                ))}
-              </Select>
-            )}
-
-            {state === "modification" ? (
-              <Form.Item label="charger le fichier de cours">
-                <Dragger {...props}>
+            <Form.Item label="Module" name="module">
+              {state === "consultation" ? (
+                <Select defaultValue={cours.module.nom_module}>
+                  <Option>{cours.module.nom_module}</Option>
+                </Select>
+              ) : (
+                <Select
+                  defaultValue={cours.module.id_module}
+                  onChange={(value) => {
+                    setIdModule(value);
+                  }}
+                >
+                  {modules.map((module) => (
+                    <Option value={module.id_module}>
+                      {module.nom_module}
+                    </Option>
+                  ))}
+                </Select>
+              )}
+            </Form.Item>
+            <Form.Item
+              label={
+                state === "modification"
+                  ? "telecharger le cours"
+                  : "visualiser le cours"
+              }
+            >
+              {state === "modification" ? (
+                <Dragger {...props} beforeUpload={() => false}>
                   <p className="ant-upload-drag-icon">
                     <InboxOutlined />
                   </p>
@@ -143,10 +164,30 @@ const TableRow = ({ cours }) => {
                     télécharger
                   </p>
                 </Dragger>
-              </Form.Item>
-            ) : (
-              <a>visualiser le document du cours</a>
-            )}
+              ) : (
+                <a
+                  download
+                  onClick={() => {
+                    axios({
+                      url: "http://localhost:8080/download/" + cours.chemin_document,
+                      method: "GET",
+                      responseType: "blob", // important
+                    }).then((response) => {
+                      const url = window.URL.createObjectURL(
+                        new Blob([response.data])
+                      );
+                      const link = document.createElement("a");
+                      link.href = url;
+                      link.setAttribute("download", "file.pdf"); //or any other extension
+                      document.body.appendChild(link);
+                      link.click();
+                    });
+                  }}
+                >
+                  cliquer pour visualiser le cours
+                </a>
+              )}
+            </Form.Item>
           </Form>
         )}
       </Modal>

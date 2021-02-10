@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import styles from "../loginPage/Auth.module.css";
 import { message,Button } from "antd";
 
-const SignUp = () => {
+const SignUp = ({history}) => {
   const [nom, setNom] = useState("");
   const [prenom, setPrenom] = useState("");
   const [tel, setTel] = useState("");
@@ -12,16 +12,21 @@ const SignUp = () => {
   const [role, setRole] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      await axios.post("", { nom, prenom, tel, email, password, role });
+      console.log(role);
+      await axios.post("http://localhost:8080/inscription", { nom, prenom, tel, email, password, role });
+      history.push('/');
     } catch (err) {
-      if (err.response.status === 400) {
-        setError(err.response.data.message);
-        setTimeout(() => {
-          setError("");
-        }, 3000);
-      } else message.error("le serveur est confronté à quelques problèmes");
+    //   if (err.response.status === 400) {
+    //     setError(err.response.data.message);
+    //     setTimeout(() => {
+    //       setError("");
+    //     }, 3000);
+    //   } else message.error("le serveur est confronté à quelques problèmes");
+    // }
+    console.log(err);
     }
   };
 
@@ -43,7 +48,7 @@ const SignUp = () => {
             placeholder="Nom"
             type="text"
             required
-            onChange={(value) => setNom(value)}
+            onChange={(value) => setNom(value.target.value)}
           />
         </div>
         <div className="form-group input-group">
@@ -53,7 +58,7 @@ const SignUp = () => {
             placeholder="Prenom"
             type="text"
             required
-            onChange={(value) => setPrenom(value)}
+            onChange={(value) => setPrenom(value.target.value)}
           />
         </div>
         <div className="form-group input-group">
@@ -63,7 +68,7 @@ const SignUp = () => {
             placeholder="tel"
             type="text"
             required
-            onChange={(value) => setTel(value)}
+            onChange={(value) => setTel(value.target.value)}
           />
         </div>
         <div className="form-group input-group">
@@ -73,7 +78,7 @@ const SignUp = () => {
             placeholder="adresse email"
             type="email"
             required
-            onChange={(value) => setEmail(value)}
+            onChange={(value) => setEmail(value.target.value)}
           />
         </div>
         <div className="form-group input-group">
@@ -83,7 +88,7 @@ const SignUp = () => {
             type="password"
             id="password"
             required
-            onChange={(value) => setPassword(value)}
+            onChange={(value) => setPassword(value.target.value)}
           />
         </div>
         <div class="form-check row">
@@ -94,8 +99,8 @@ const SignUp = () => {
               name="flexRadioDefault"
               id="etudiant"
               required
-              value="ROLE_ETUDAINT"
-              onChange={(value) => setRole(value)}
+              value="ROLE_ETUDIANT"
+              onChange={(value) => setRole(value.target.value)}
             />
             <label class="form-check-label" for="flexRadioDefault1">
               Etudiant
@@ -109,7 +114,7 @@ const SignUp = () => {
               id="enseignant"
               required
               value="ROLE_PROFESSEUR"
-              onChange={(value) => setRole(value)}
+              onChange={(value) => setRole(value.target.value)}
             />
             <label class="form-check-label" for="flexRadioDefault1">
               Enseignant
@@ -131,6 +136,6 @@ const SignUp = () => {
       </form>
     </div>
   );
-};
+}
 
 export default SignUp;

@@ -15,7 +15,6 @@ const layout = {
 
 const TableRow = ({ service }) => {
   const [visible, setVisible] = useState(false);
-  const [visible1, setVisible1] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalText, setModalText] = useState("");
   const [state, setState] = useState("");
@@ -30,36 +29,17 @@ const TableRow = ({ service }) => {
     etat = <CheckOutlined style={{ color: "#52c41a" }} />;
   else etat = <CloseOutlined style={{ color: "#f62459" }} />;
 
-  const ValidationForm = (
-    <Form {...layout} name="basic">
-      <Form.Item label="justification/reponse" name="description">
-        <TextArea
-          required
-          onChange={(e) => {
-            setCause(e.target.value);
-          }}
-        />
-      </Form.Item>
-    </Form>
-  );
-
   const handleDelete = () => {
     setState("suppression");
-    setModalText("voulez-vous vraiment supprimer ce service");
+    setModalText("voulez-vous vraiment supprimer cette demande");
     setModalTitle("Confirmation de suppression");
     setVisible(true);
   };
 
   const handleConsult = () => {
-    setState("traitement");
-    setModalTitle("Consultation du service");
+    setState("consultation");
+    setModalTitle("Consultation du demande de service");
     setVisible(true);
-  };
-
-  const handleCancel = () => {
-    setVisible1(false);
-    setState("");
-    setCause("");
   };
 
   const menu = (
@@ -69,21 +49,17 @@ const TableRow = ({ service }) => {
           supprimer
         </Button>
       </Menu.Item>
-      {service.etat === "en cours de traitement" ? (
-        <Menu.Item>
-          <Button type="text" onClick={handleConsult}>
-            traiter
-          </Button>
-        </Menu.Item>
-      ) : null}
+      <Menu.Item>
+        <Button type="text" onClick={handleConsult}>
+          consulter
+        </Button>
+      </Menu.Item>
     </Menu>
   );
 
   const handleClick = async () => {
-    if (state === "traitement") {
-      setState("accept");
+    if (state === "consultation") {
       setVisible(false);
-      setVisible1(true);
     } else if (state === "suppression") {
       let headers = {
         Authorization: "Bearer " + localStorage.getItem("token"),
@@ -101,28 +77,28 @@ const TableRow = ({ service }) => {
     }
   };
 
-  const handleClick1 = async () => {
-    let headers = {
-      Authorization: "Bearer " + localStorage.getItem("token"),
-    };
+  // const handleClick1 = async () => {
+  //   let headers = {
+  //     Authorization: "Bearer " + localStorage.getItem("token"),
+  //   };
 
-    let accepte;
-    if (state === "refuse") accepte = "refuse";
-    else accepte = "accepte";
+  //   let accepte;
+  //   if (state === "refuse") accepte = "refuse";
+  //   else accepte = "accepte";
 
-    await axios.put(
-      "http://localhost:8080/modifierService",
-      {
-        ...service,
-        reponse: cause,
-        etat: accepte,
-      },
-      { headers: headers }
-    );
-    getRessourceFromApi("http://localhost:8080/services", setServs);
-    setVisible1(false);
-    setState("");
-  };
+  //   await axios.put(
+  //     "http://localhost:8080/modifierService",
+  //     {
+  //       ...service,
+  //       reponse: cause,
+  //       etat: accepte,
+  //     },
+  //     { headers: headers }
+  //   );
+  //   getRessourceFromApi("http://localhost:8080/services", setServs);
+  //   setVisible1(false);
+  //   setState("");
+  // };
 
   return (
     <>
@@ -130,15 +106,7 @@ const TableRow = ({ service }) => {
         title={modalTitle}
         visible={visible}
         onOk={handleClick}
-        onCancel={() => {
-          if (state === "suppression") {
-            setVisible(false);
-          } else if (state === "traitement") {
-            setVisible(false);
-            setState("refuse");
-            setVisible1(true);
-          }
-        }}
+        onCancel={() => setVisible(false)}
       >
         {state === "suppression" ? (
           modalText
@@ -147,26 +115,21 @@ const TableRow = ({ service }) => {
             <Form.Item label="Description du service" name="name">
               <Input.TextArea defaultValue={service.description} readOnly />
             </Form.Item>
+
+            <Form.Item label="etat">
+              <Input defaultValue={service.etat} readOnly />
+            </Form.Item>
+            {service.etat === "accepte" || service.etat === "refuse" ? (
+              <Form.Item label="reponse de l'admin">
+                <Input.TextArea defaultValue={service.reponse} readOnly />
+              </Form.Item>
+            ) : null}
           </Form>
         )}
-      </Modal>
-
-      <Modal
-        title={
-          state === "refuse"
-            ? "s’il vous plaît préciser la cause de votre décision"
-            : "message de réponse"
-        }
-        visible={visible1}
-        onOk={handleClick1}
-        onCancel={handleCancel}
-      >
-        {ValidationForm}
       </Modal>
       <tr>
         <td>{service.id_service}</td>
         <td>{service.description}</td>
-        <td>{service.utilisateur.nom + " " + service.utilisateur.prenom}</td>
         <td>{etat}</td>
         <td>
           <Dropdown overlay={menu} placement="bottomLeft" arrow>
